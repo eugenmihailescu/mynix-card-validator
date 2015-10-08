@@ -1,1 +1,114 @@
-../../braintree/assets/js/ccv.html
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+div, table {
+	display: inline-block;
+	line-height: 19px;
+	padding: 11px 15px;
+	font-size: 14px;
+	text-align: left;
+	margin: 25px;
+	background-color: #FFF;
+	border-left: 4px solid #ff6b6b;
+	box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1);
+	color: #444;
+	font-family: "Open Sans", sans-serif;
+	outline: 0px none;
+}
+
+table, .nag {
+	display: table;
+	border-color: #FFBA00;
+}
+
+table td:first-child {
+	font-weight: bold;
+}
+
+table tr:last-child td {
+	font-weight: normal;
+}
+
+table td:first-child:HOVER {
+	color: #236391;
+}
+
+table tr:nth-child(4) td {
+	text-align: center;
+}
+
+input[type="button"] {
+	background-color: #FFBA00;
+	color: #000;
+	cursor: pointer;
+}
+</style>
+<script type="text/javascript" src="mynix-ccv-validator.js"></script>
+<script type="text/javascript">
+	function print_result(what, valid) {
+		var color = valid ? 'green' : 'red';
+		return '<li><span style="color:'+color+'">' + what + ' is ' + (valid ? '' : 'NOT') + ' valid</span></li>';
+	}
+
+	function validate() {
+		var el = document.getElementById('cc_result'), cc_number = document.getElementById('cc_number').value, cc_expiry = document.getElementById('cc_expiry').value
+				.replace(/[^\d]/g, ''), ccv_number = document.getElementById('ccv_number').value, is_valid, issuer, s = '';
+
+		Mynix.CC_Validator.init(cc_number, cc_expiry, ccv_number);
+
+		is_valid = Mynix.CC_Validator.is_valid_number();
+
+		issuer = is_valid ? Mynix.CC_Validator.get_card_issuer(Mynix.CC_Validator.is_valid_issuer()) : '';
+
+		el.innerHTML = '';
+		if (false !== is_valid)
+			el.innerHTML = '<p>The card number matches the <strong>' + issuer + '</strong> pattern</p>';
+
+		s = print_result('card number', is_valid);
+		s += print_result('expiry date', Mynix.CC_Validator.is_valid_expiry());
+		s += print_result('CCV', Mynix.CC_Validator.is_valid_ccv());
+		el.innerHTML += '<ul>' + s + '</ul>';
+	}
+</script>
+<meta charset="UTF-8">
+<title>Credit card validator</title>
+</head>
+<body>
+	<div>
+		Although this script does not transfer your data anywhere please don't use
+		real credit card numbers.<br>Instead you may use <a
+			href="https://developers.braintreepayments.com/ios+ruby/reference/general/testing#no-credit-card-errors"
+			target="_blank">these numbers</a> which syntactically are valid but obviously
+		there are fake.
+	</div>
+	<table>
+		<tr>
+			<td><label for="cc_number">Card number</label></td>
+			<td><input id="cc_number" type="text" value="4111111111111111"
+				maxlength="20" size="20" placeholder="---- ---- ---- ----"></td>
+		</tr>
+		<tr>
+			<td><label for="cc_expiry">Expiry date</label></td>
+			<td><input id="cc_expiry" type="text" value="01/16" maxlength="5"
+				size="5" placeholder="MM/DD"></td>
+		</tr>
+		<tr>
+			<td><label for="ccv_number">CCV</label></td>
+			<td><input id="ccv_number" type="text" value="123" maxlength="4"
+				size="4" placeholder="---"></td>
+		</tr>
+		<tr>
+			<td colspan="2"><input type="button" value="Validate"
+				onclick="validate();"></td>
+		</tr>
+		<tr>
+			<td colspan="2" id="cc_result"></td>
+		</tr>
+	</table>
+	<div class="nag">
+		Do you want the JavaScript class source code?<br> <a
+			href="https://github.com/eugenmihailescu/mynix-ccv-validator" target="_blank">https://github.com/eugenmihailescu/mynix-ccv-validator</a>
+	</div>
+</body>
+</html>
