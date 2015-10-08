@@ -1,0 +1,1 @@
+../../braintree/assets/js/mynix-ccv-validator.js
