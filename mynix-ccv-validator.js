@@ -5,7 +5,6 @@
  * @since 0.1
  * @version 0.1
  * @author Eugen Mihailescu <eugenmihailescux@gmail.com>
- * @requires jQuery
  * 
  */
 var Mynix = {};
