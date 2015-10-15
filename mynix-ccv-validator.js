@@ -75,11 +75,62 @@ Mynix.CC_Validator = (function() {
 		return retArr;
 	};
 
+	/**
+	 * Initialize the class
+	 * 
+	 * @param int
+	 *            cc_number The credit card number
+	 * @param string
+	 *            cc_expiry The credit card expiry date in the format MMYY
+	 * @param int
+	 *            ccv_number The credit card security/verification code
+	 */
 	var init = function(cc_number, cc_expiry, ccv_number) {
 		cc = UNDEF == typeof cc_number ? null : cc_number;
 		expiry = UNDEF == typeof cc_expiry ? null : cc_expiry;
 		ccv = UNDEF == typeof ccv_number ? null : ccv_number;
 	};
+
+	/**
+	 * Returns an array of credit card patterns
+	 * 
+	 * @param boolean
+	 *            guess When true then return the pattern that allows guessing,
+	 *            otherwise the exact pattern
+	 * @return array of strings
+	 * 
+	 * @see http://www.computersolving.com/computer-tips-tricks/what-your-credit-card-numbers-mean/
+	 */
+	function _get_patterns(guess) {
+		guess = UNDEF == typeof guess ? false : guess;
+
+		// We expect the following patterns:
+		// https://web.archive.org/web/20150722011618/http://www.barclaycard.co.uk/business/files/Ranges_and_Rules_September_2014.pdf
+
+		var patterns = [];
+		patterns[JCB] = '(^(352)[8-9](\\d{11}$|\\d{12}$))|(^(35)[3-8](\\d{12}$|\\d{13}$))';
+		patterns[AMEX] = '(^3[47])((\\d{11}$)|(\\d{13}$))';
+		patterns[VISA] = '(^4\\d{12}$)|(^4[0-8]\\d{14}$)|(^(49)[^013]\\d{13}$)|(^(49030)[0-1]\\d{10}$)|(^(49033)[0-4]\\d{10}$)|(^(49110)[^12]\\d{10}$)|(^(49117)[0-3]\\d{10}$)|(^(49118)[^0-2]\\d{10}$)|(^(493)[^6]\\d{12}$)';
+		patterns[MASTER] = '^5[1-5]\\d{14}$';
+		patterns[DINERS] = '(^(30)[0-5]\\d{11}$)|(^(36)\\d{12}$)|(^(38[0-8])\\d{11}$)';
+		patterns[MAESTRO] = '(^(5[0678])\\d{11,18}$)|(^(6[^0357])\\d{11,18}$)|(^(601)[^1]\\d{9,16}$)|(^(6011)\\d{9,11}$)|(^(6011)\\d{13,16}$)|(^(65)\\d{11,13}$)|(^(65)\\d{15,18}$)|(^(633)[^34](\\d{9,16}$))|(^(6333)[0-4](\\d{8,10}$))|(^(6333)[0-4](\\d{12}$))|(^(6333)[0-4](\\d{15}$))|(^(6333)[5-9](\\d{8,10}$))|(^(6333)[5-9](\\d{12}$))|(^(6333)[5-9](\\d{15}$))|(^(6334)[0-4](\\d{8,10}$))|(^(6334)[0-4](\\d{12}$))|(^(6334)[0-4](\\d{15}$))|(^(67)[^(59)](\\d{9,16}$))|(^(6759)](\\d{9,11}$))|(^(6759)](\\d{13}$))|(^(6759)](\\d{16}$))|(^(67)[^(67)](\\d{9,16}$))|(^(6767)](\\d{9,11}$))|(^(6767)](\\d{13}$))|(^(6767)](\\d{16}$))';
+		patterns[DISCOVER] = '(^(6011)\\d{12}$)|(^(65)\\d{14}$)';
+
+		// mangle the patterns such that they match shorter strings than they
+		// normally do
+		if (guess) {
+			for ( var issuer in patterns)
+				if (patterns.hasOwnProperty(issuer)) {
+					// set the lower limit (zero)
+					patterns[issuer] = patterns[issuer].replace(/\{(\d+)\}/g, '{0,$1}');
+
+					// replace the lower limit with zero
+					patterns[issuer] = patterns[issuer].replace(/(\d+)(?=,(\d+)\})/g, '0');
+				}
+		}
+
+		return patterns;
+	}
 
 	/**
 	 * Returns the card number length by issuer
@@ -110,30 +161,24 @@ Mynix.CC_Validator = (function() {
 	};
 
 	/**
-	 * Returns an identifier for a valid card issuer, false otherwise
+	 * Returns an identifier for a valid card issuer, false otherwise. When
+	 * guess = true it tries to guess the issuer even if the card number has not
+	 * the legal/expected length
 	 * 
+	 * @params boolean guess guess When true then return the pattern that allows
+	 *         guessing, otherwise the exact pattern
 	 * @return boolean|int
-	 * @see http://www.computersolving.com/computer-tips-tricks/what-your-credit-card-numbers-mean/
+	 * 
 	 */
-	var is_valid_issuer = function() {
-		// We expect the following patterns:
-		// @see
-		// http://www.barclaycard.co.uk/business/files/Ranges_and_Rules_September_2014.pdf
+	var is_valid_issuer = function(guess) {
+		guess = UNDEF == typeof guess ? false : guess;
 
-		var patterns = [];
-		patterns[JCB] = '(^(352)[8-9](\\d{11}$|\\d{12}$))|(^(35)[3-8](\\d{12}$|\\d{13}$))';
-		patterns[AMEX] = '(^3[47])((\\d{11}$)|(\\d{13}$))';
-		patterns[VISA] = '(^4\\d{12}$)|(^4[0-8]\\d{14}$)|(^(49)[^013]\\d{13}$)|(^(49030)[0-1]\\d{10}$)|(^(49033)[0-4]\\d{10}$)|(^(49110)[^12]\\d{10}$)|(^(49117)[0-3]\\d{10}$)|(^(49118)[^0-2]\\d{10}$)|(^(493)[^6]\\d{12}$)';
-		patterns[MASTER] = '^5[1-5]\\d{14}$';
-		patterns[DINERS] = '(^(30)[0-5]\\d{11}$)|(^(36)\\d{12}$)|(^(38[0-8])\\d{11}$)';
-		patterns[MAESTRO] = '(^(5[0678])\\d{11,18}$)|(^(6[^0357])\\d{11,18}$)|(^(601)[^1]\\d{9,16}$)|(^(6011)\\d{9,11}$)|(^(6011)\\d{13,16}$)|(^(65)\\d{11,13}$)|(^(65)\\d{15,18}$)|(^(633)[^34](\\d{9,16}$))|(^(6333)[0-4](\\d{8,10}$))|(^(6333)[0-4](\\d{12}$))|(^(6333)[0-4](\\d{15}$))|(^(6333)[5-9](\\d{8,10}$))|(^(6333)[5-9](\\d{12}$))|(^(6333)[5-9](\\d{15}$))|(^(6334)[0-4](\\d{8,10}$))|(^(6334)[0-4](\\d{12}$))|(^(6334)[0-4](\\d{15}$))|(^(67)[^(59)](\\d{9,16}$))|(^(6759)](\\d{9,11}$))|(^(6759)](\\d{13}$))|(^(6759)](\\d{16}$))|(^(67)[^(67)](\\d{9,16}$))|(^(6767)](\\d{9,11}$))|(^(6767)](\\d{13}$))|(^(6767)](\\d{16}$))';
-		patterns[DISCOVER] = '(^(6011)\\d{12}$)|(^(65)\\d{14}$)';
+		var patterns = _get_patterns(guess), cclen = cc.length;
 
-		var cclen = cc.length;
 		for ( var issuer in patterns)
 			if (patterns.hasOwnProperty(issuer)) {
 				var r = new RegExp(patterns[issuer]);
-				if (null != cc.match(r) && cclen == (cclen & _get_cclen_by_issuer(issuer)))
+				if (null != cc.match(r) && (guess || cclen == (cclen & _get_cclen_by_issuer(issuer))))
 					return parseInt(issuer);
 			}
 
@@ -216,7 +261,7 @@ Mynix.CC_Validator = (function() {
 
 		result = 4 == expiry.length && (mm = parseInt(expiry.substr(0, 2))) < 13 && mm > 0;
 
-		if ((yy = parseInt(expiry.substr(2))) >= (yyyy % 1000)) {
+		if (result && (yy = parseInt(expiry.substr(2))) >= (yyyy % 1000)) {
 			c_time = 3600 * 24 * (365 * (2000 + yy - 1970) + 30 * (mm + 1));
 			return c_time * 1000 >= today;
 		}
@@ -224,12 +269,24 @@ Mynix.CC_Validator = (function() {
 	};
 
 	/**
-	 * Checks if the CCV/CVC/CID/whatever is valid number
+	 * Checks if the CCV/CVC/CID/whatever is valid number.
+	 * 
+	 * It must be 4 digits for AMEX and 3 digits for other card types
 	 * 
 	 * @return boolean Returns true if valid , false otherwise
 	 */
 	var is_valid_ccv = function() {
-		return ccv.length > 2 && ccv.length < 5 && !ccv.match('/[\\D]/');
+		var len;
+		if (false !== (issuer = is_valid_issuer()))
+			switch (issuer) {
+				case AMEX:
+					len = 4;
+					break;
+				default:
+					len = 3;
+					break;
+			}
+		return ccv.length === len && !ccv.match('/[\\D]/');
 	};
 
 	/**
@@ -258,10 +315,21 @@ Mynix.CC_Validator = (function() {
 		return false;
 	};
 
-	return { init : init,
+	// return the public properties
+	return {
+	// public functions
+	init : init,
 	get_card_issuer : get_card_issuer,
 	is_valid_ccv : is_valid_ccv,
 	is_valid_expiry : is_valid_expiry,
 	is_valid_issuer : is_valid_issuer,
-	is_valid_number : is_valid_number };
+	is_valid_number : is_valid_number,
+	// public constant
+	AMEX : AMEX,
+	VISA : VISA,
+	MASTER : MASTER,
+	DISCOVER : DISCOVER,
+	DINERS : DINERS,
+	JCB : JCB,
+	MAESTRO : MAESTRO };
 })();
