@@ -126,7 +126,7 @@ input[type="button"] {
 
         is_valid = Mynix.CC_Validator.is_valid_number();
 
-        postal_code_is_valid = Mynix.CC_Validator.is_valid_postcode(postal_code, country_code);
+        postal_code_is_valid = Mynix.CC_Validator.is_valid_postalcode(postal_code, country_code);
         issuer = is_valid ? Mynix.CC_Validator.get_card_issuer(Mynix.CC_Validator.is_valid_issuer()) : '';
 
         el.innerHTML = '';
