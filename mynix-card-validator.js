@@ -7,7 +7,7 @@
  * @author Eugen Mihailescu <eugenmihailescux@gmail.com>
  * 
  */
-Mynix = Mynix || {};
+var Mynix = Mynix || {};
 Mynix.CC_Validator = (function() {
     var UNDEF = 'undefined';
 
@@ -25,7 +25,7 @@ Mynix.CC_Validator = (function() {
 
     // valid postal codes length by country
     // http://www.upu.int/uploads/tx_sbdownloader/manualAddressingKnowledgeCentreGeneralIssuesEn.pdf
-    var postal_codes = {
+    var country_postal_code_lengths = {
         "AF" : [ "Afghanistan", 4 ],
         "GL" : [ "Greenland", 4 ],
         "NO" : [ "Norway", 4 ],
@@ -453,8 +453,14 @@ Mynix.CC_Validator = (function() {
         return ccv.length === len && !ccv.match('/[\\D]/');
     };
 
-    var is_valid_postcode = function(postal_code, country) {
-        return postal_codes.hasOwnProperty(country) ? postal_code.length == postal_codes[country][1]
+    /**
+     * Check whether the postal_code has a valid length for the given country. If the country is not found then at least
+     * checks if the length is within the min-max range for postal codes.
+     * 
+     * @return Returns true if the length of the postal code is valid, false otherwise
+     */
+    var is_valid_postalcode = function(postal_code, country) {
+        return country_postal_code_lengths.hasOwnProperty(country) ? postal_code.length == country_postal_code_lengths[country][1]
                 : postal_code.length >= MIN_POSTAL_CODE_LENGTH && postal_code.length <= MAX_POSTAL_CODE_LENGTH;
     }
 
@@ -495,17 +501,68 @@ Mynix.CC_Validator = (function() {
         }
     };
 
+    /**
+     * Get the list of countries and their max length postal codes
+     * 
+     * @return Returns an object where keys are country code and value an tupple with country name and country's max postal
+     *         length
+     */
+    var get_country_postal_code_lengths = function() {
+        return country_postal_code_lengths;
+    };
+
+    /**
+     * Get the card issuer code (eg. visa, mastercard)
+     * 
+     * @return Returns a string representing the card code on success, "unknown" string otherwise
+     */
+    var get_card_issuer_code = function() {
+        var id = is_valid_issuer(cc, true);
+        var code = "unknown";
+        if (false === id) {
+            return code;
+        }
+
+        switch (id) {
+        case AMEX:
+            code = "amex";
+            break;
+        case VISA:
+            code = "visa";
+            break;
+        case MASTER:
+            code = "mastercard";
+            break;
+        case DISCOVER:
+            code = "discover";
+            break;
+        case DINERS:
+            code = "dinersclub";
+            break;
+        case JCB:
+            code = "jcb";
+            break;
+        case MAESTRO:
+            code = "maestro";
+            break;
+        }
+
+        return code;
+    };
+
     // our class public interface
     return {
         // public functions
         init : init,
         get_card_issuer : get_card_issuer,
+        get_card_issuer_code : get_card_issuer_code,
         is_valid_ccv : is_valid_ccv,
         is_valid_expiry : is_valid_expiry,
         is_valid_issuer : is_valid_issuer,
         is_valid_number : is_valid_number,
-        is_valid_postcode : is_valid_postcode,
+        is_valid_postalcode : is_valid_postalcode,
         set_cards_pattern : set_cards_pattern,
+        get_country_postal_code_lengths : get_country_postal_code_lengths,
         // public constant
         AMEX : AMEX,
         VISA : VISA,
