@@ -8,8 +8,11 @@
  * 
  */
 Mynix = Mynix || {};
-Mynix.CC_Validator = function() {
+Mynix.CC_Validator = (function() {
     var UNDEF = 'undefined';
+
+    var MIN_POSTAL_CODE_LENGTH = 3;
+    var MAX_POSTAL_CODE_LENGTH = 10;
 
     // card constants
     var AMEX = 0;
@@ -20,6 +23,164 @@ Mynix.CC_Validator = function() {
     var JCB = 5;
     var MAESTRO = 6;
 
+    // valid postal codes length by country
+    // http://www.upu.int/uploads/tx_sbdownloader/manualAddressingKnowledgeCentreGeneralIssuesEn.pdf
+    var postal_codes = {
+        "AF" : [ "Afghanistan", 4 ],
+        "GL" : [ "Greenland", 4 ],
+        "NO" : [ "Norway", 4 ],
+        "DZ" : [ "Algeria", 5 ],
+        "GP" : [ "Guadeloupe", 5 ],
+        "OM" : [ "Oman", 3 ],
+        "AD" : [ "Andorra", 5 ],
+        "GT" : [ "Guatemala", 5 ],
+        "PK" : [ "Pakistan", 5 ],
+        "AR" : [ "Argentina", 5 ],
+        "GN" : [ "Guinea", 3 ],
+        "PG" : [ "Papua New Guinea", 3 ],
+        "AM" : [ "Armenia", 4 ],
+        "GW" : [ "Guinea-Bissau", 4 ],
+        "PY" : [ "Paraguay", 4 ],
+        "HT" : [ "Haiti", 4 ],
+        "PE" : [ "Peru", 5 ],
+        "AU" : [ "Australia", 4 ],
+        "HN" : [ "Honduras", 6 ],
+        "PH" : [ "Philippines", 4 ],
+        "AT" : [ "Austria", 4 ],
+        "HU" : [ "Hungary", 4 ],
+        "PN" : [ "Pitcairn", 8 ],
+        "AZ" : [ "Azerbaijan", 7 ],
+        "IS" : [ "Iceland", 3 ],
+        "PL" : [ "Poland", 6 ],
+        "BH" : [ "Bahrain", 4 ],
+        "IN" : [ "India", 6 ],
+        "PT" : [ "Portugal", 8 ],
+        "ID" : [ "Indonesia", 5 ],
+        "RO" : [ "Romania", 6 ],
+        "BD" : [ "Bangladesh", 4 ],
+        "IR" : [ "Iran", 6 ],
+        "RU" : [ "Russia", 6 ],
+        "BB" : [ "Barbados", 7 ],
+        "IQ" : [ "Iraq", 5 ],
+        "RE" : [ "Reunion", 5 ],
+        "BY" : [ "Belarus", 6 ],
+        "IL" : [ "Israel", 5 ],
+        "GS" : [ "South Georgia/Sandwich Islands", 8 ],
+        "BE" : [ "Belgium", 4 ],
+        "IT" : [ "Italy", 5 ],
+        "BL" : [ "Saint Barthélemy", 5 ],
+        "BM" : [ "Bermuda", 5 ],
+        "JP" : [ "Japan", 8 ],
+        "SH" : [ "Saint Helena", 8 ],
+        "BT" : [ "Bhutan", 5 ],
+        "JO" : [ "Jordan", 5 ],
+        "MF" : [ "Saint Martin (French part)", 5 ],
+        "BA" : [ "Bosnia and Herzegovina", 5 ],
+        "KZ" : [ "Kazakhstan", 6 ],
+        "PM" : [ "Saint Pierre and Miquelon", 5 ],
+        "KE" : [ "Kenya", 5 ],
+        "WS" : [ "Samoa", 6 ],
+        "BR" : [ "Brazil", 9 ],
+        "KR" : [ "South Korea", 5 ],
+        "SM" : [ "San Marino", 5 ],
+        "SA" : [ "Saudi Arabia", 5 ],
+        "BN" : [ "Brunei", 6 ],
+        "KW" : [ "Kuwait", 5 ],
+        "SN" : [ "Senegal", 5 ],
+        "BG" : [ "Bulgaria", 4 ],
+        "KG" : [ "Kyrgyzstan", 6 ],
+        "RS" : [ "Serbia", 6 ],
+        "CV" : [ "Cape Verde", 4 ],
+        "LA" : [ "Laos", 5 ],
+        "KH" : [ "Cambodia", 5 ],
+        "LV" : [ "Latvia", 7 ],
+        "SG" : [ "Singapore", 6 ],
+        "CA" : [ "Canada", 7 ],
+        "LB" : [ "Lebanon", 9 ],
+        "SK" : [ "Slovakia", 6 ],
+        "KY" : [ "Cayman Islands", 8 ],
+        "SI" : [ "Slovenia", 4 ],
+        "CL" : [ "Chile", 7 ],
+        "LS" : [ "Lesotho", 3 ],
+        "ZA" : [ "South Africa", 4 ],
+        "CN" : [ "China", 6 ],
+        "LI" : [ "Liechtenstein", 4 ],
+        "ES" : [ "Spain", 5 ],
+        "CX" : [ "Christmas Island", 4 ],
+        "LT" : [ "Lithuania", 5 ],
+        "LK" : [ "Sri Lanka", 5 ],
+        "LU" : [ "Luxembourg", 6 ],
+        "MK" : [ "Macedonia", 4 ],
+        "SD" : [ "Sudan", 5 ],
+        "CR" : [ "Costa Rica", 5 ],
+        "MG" : [ "Madagascar", 3 ],
+        "SJ" : [ "Svalbard and Jan Mayen", 4 ],
+        "HR" : [ "Croatia", 5 ],
+        "MY" : [ "Malaysia", 5 ],
+        "SZ" : [ "Swaziland", 4 ],
+        "CU" : [ "Cuba", 5 ],
+        "MV" : [ "Maldives", 5 ],
+        "SE" : [ "Sweden", 6 ],
+        "CY" : [ "Cyprus", 4 ],
+        "MT" : [ "Malta", 8 ],
+        "CH" : [ "Switzerland", 4 ],
+        "CZ" : [ "Czech Republic", 6 ],
+        "TW" : [ "Taiwan", 5 ],
+        "DK" : [ "Denmark", 4 ],
+        "TJ" : [ "Tajikistan", 6 ],
+        "MQ" : [ "Martinique", 5 ],
+        "TZ" : [ "Tanzania", 5 ],
+        "DO" : [ "Dominican Republic", 5 ],
+        "YT" : [ "Mayotte", 5 ],
+        "TH" : [ "Thailand", 5 ],
+        "EC" : [ "Ecuador", 6 ],
+        "MX" : [ "Mexico", 5 ],
+        "TT" : [ "Trinidad and Tobago", 6 ],
+        "EG" : [ "Egypt", 5 ],
+        "MD" : [ "Moldova", 4 ],
+        "SV" : [ "El Salvador", 4 ],
+        "MC" : [ "Monaco", 5 ],
+        "TN" : [ "Tunisia", 4 ],
+        "EE" : [ "Estonia", 5 ],
+        "MN" : [ "Mongolia", 5 ],
+        "TR" : [ "Turkey", 5 ],
+        "ET" : [ "Ethiopia", 4 ],
+        "ME" : [ "Montenegro", 5 ],
+        "TM" : [ "Turkmenistan", 6 ],
+        "FK" : [ "Falkland Islands", 8 ],
+        "MS" : [ "Montserrat", 7 ],
+        "FO" : [ "Faroe Islands", 3 ],
+        "MA" : [ "Morocco", 5 ],
+        "US" : [ "United States (US)", 5 ],
+        "FI" : [ "Finland", 5 ],
+        "FR" : [ "France", 5 ],
+        "MZ" : [ "Mozambique", 4 ],
+        "UA" : [ "Ukraine", 5 ],
+        "GF" : [ "French Guiana", 5 ],
+        "NP" : [ "Nepal", 5 ],
+        "UY" : [ "Uruguay", 5 ],
+        "PF" : [ "French Polynesia", 5 ],
+        "NL" : [ "Netherlands", 7 ],
+        "UZ" : [ "Uzbekistan", 6 ],
+        "GE" : [ "Georgia", 4 ],
+        "VA" : [ "Vatican", 5 ],
+        "DE" : [ "Germany", 5 ],
+        "NC" : [ "New Caledonia", 5 ],
+        "VE" : [ "Venezuela", 6 ],
+        "GI" : [ "Gibraltar", 8 ],
+        "NZ" : [ "New Zealand", 4 ],
+        "GB" : [ "United Kingdom (UK)", 8 ],
+        "NI" : [ "Nicaragua", 5 ],
+        "VN" : [ "Vietnam", 6 ],
+        "NE" : [ "Niger", 4 ],
+        "VG" : [ "British Virgin Islands", 6 ],
+        "NG" : [ "Nigeria", 6 ],
+        "WF" : [ "Wallis and Futuna", 5 ],
+        "GR" : [ "Greece", 6 ],
+        "NF" : [ "Norfolk Island", 4 ],
+        "AX" : [ "Åland Islands", 5 ]
+    };
+
     // private properties
     var cc;
 
@@ -27,8 +188,10 @@ Mynix.CC_Validator = function() {
 
     var ccv;
 
+    var cards_pattern = false;
+
     var strrev = function(s) {
-        return s.split("").reverse().join("");
+        return s.split('').reverse().join('');
     };
 
     /**
@@ -106,14 +269,18 @@ Mynix.CC_Validator = function() {
         // We expect the following patterns:
         // https://web.archive.org/web/20150722011618/http://www.barclaycard.co.uk/business/files/Ranges_and_Rules_September_2014.pdf
 
-        var patterns = [];
-        patterns[JCB] = '(^(352)[8-9](\\d{11}$|\\d{12}$))|(^(35)[3-8](\\d{12}$|\\d{13}$))';
-        patterns[AMEX] = '(^3[47])((\\d{11}$)|(\\d{13}$))';
-        patterns[VISA] = '(^4\\d{12}$)|(^4[0-8]\\d{14}$)|(^(49)[^013]\\d{13}$)|(^(49030)[0-1]\\d{10}$)|(^(49033)[0-4]\\d{10}$)|(^(49110)[^12]\\d{10}$)|(^(49117)[0-3]\\d{10}$)|(^(49118)[^0-2]\\d{10}$)|(^(493)[^6]\\d{12}$)';
-        patterns[MASTER] = '^5[1-5]\\d{14}$';
-        patterns[DINERS] = '(^(30)[0-5]\\d{11}$)|(^(36)\\d{12}$)|(^(38[0-8])\\d{11}$)';
-        patterns[MAESTRO] = '(^(5[0678])\\d{11,18}$)|(^(6[^0357])\\d{11,18}$)|(^(601)[^1]\\d{9,16}$)|(^(6011)\\d{9,11}$)|(^(6011)\\d{13,16}$)|(^(65)\\d{11,13}$)|(^(65)\\d{15,18}$)|(^(633)[^34](\\d{9,16}$))|(^(6333)[0-4](\\d{8,10}$))|(^(6333)[0-4](\\d{12}$))|(^(6333)[0-4](\\d{15}$))|(^(6333)[5-9](\\d{8,10}$))|(^(6333)[5-9](\\d{12}$))|(^(6333)[5-9](\\d{15}$))|(^(6334)[0-4](\\d{8,10}$))|(^(6334)[0-4](\\d{12}$))|(^(6334)[0-4](\\d{15}$))|(^(67)[^(59)](\\d{9,16}$))|(^(6759)](\\d{9,11}$))|(^(6759)](\\d{13}$))|(^(6759)](\\d{16}$))|(^(67)[^(67)](\\d{9,16}$))|(^(6767)](\\d{9,11}$))|(^(6767)](\\d{13}$))|(^(6767)](\\d{16}$))';
-        patterns[DISCOVER] = '(^(6011)\\d{12}$)|(^(65)\\d{14}$)';
+        var patterns = false !== cards_pattern ? cards_pattern : [];
+
+        // in case of no custom paterns use the default set
+        if (false === cards_pattern) {
+            patterns[JCB] = '(^(352)[8-9](\\d{11}$|\\d{12}$))|(^(35)[3-8](\\d{12}$|\\d{13}$))';
+            patterns[AMEX] = '(^3[47])((\\d{11}$)|(\\d{13}$))';
+            patterns[VISA] = '(^4\\d{12}$)|(^4[0-8]\\d{14}$)|(^(49)[^013]\\d{13}$)|(^(49030)[0-1]\\d{10}$)|(^(49033)[0-4]\\d{10}$)|(^(49110)[^12]\\d{10}$)|(^(49117)[0-3]\\d{10}$)|(^(49118)[^0-2]\\d{10}$)|(^(493)[^6]\\d{12}$)';
+            patterns[MASTER] = '^5[1-5]\\d{14}$';
+            patterns[DINERS] = '(^(30)[0-5]\\d{11}$)|(^(36)\\d{12}$)|(^(38[0-8])\\d{11}$)';
+            patterns[MAESTRO] = '(^(5[0678])\\d{11,18}$)|(^(6[^0357])\\d{11,18}$)|(^(601)[^1]\\d{9,16}$)|(^(6011)\\d{9,11}$)|(^(6011)\\d{13,16}$)|(^(65)\\d{11,13}$)|(^(65)\\d{15,18}$)|(^(633)[^34](\\d{9,16}$))|(^(6333)[0-4](\\d{8,10}$))|(^(6333)[0-4](\\d{12}$))|(^(6333)[0-4](\\d{15}$))|(^(6333)[5-9](\\d{8,10}$))|(^(6333)[5-9](\\d{12}$))|(^(6333)[5-9](\\d{15}$))|(^(6334)[0-4](\\d{8,10}$))|(^(6334)[0-4](\\d{12}$))|(^(6334)[0-4](\\d{15}$))|(^(67)[^(59)](\\d{9,16}$))|(^(6759)](\\d{9,11}$))|(^(6759)](\\d{13}$))|(^(6759)](\\d{16}$))|(^(67)[^(67)](\\d{9,16}$))|(^(6767)](\\d{9,11}$))|(^(6767)](\\d{13}$))|(^(6767)](\\d{16}$))';
+            patterns[DISCOVER] = '(^(6011)\\d{12}$)|(^(65)\\d{14}$)';
+        }
 
         // mangle the patterns such that they match shorter strings than they
         // normally do
@@ -161,7 +328,7 @@ Mynix.CC_Validator = function() {
 
     /**
      * Returns an identifier for a valid card issuer, false otherwise. When guess = true it tries to guess the issuer even if
-     * the card number has not the legal/expected length
+     * the card number has not the legal/expected length.
      * 
      * @params boolean guess guess When true then return the pattern that allows guessing, otherwise the exact pattern
      * @return boolean|int
@@ -252,11 +419,13 @@ Mynix.CC_Validator = function() {
      * @return boolean Return true if a valid date format, false otherwise
      */
     var is_valid_expiry = function() {
-        var today = new Date(), yyyy = today.getFullYear(), c_time;
+        var today = new Date(), yyyy = today.getFullYear(), c_time, mm_len;
 
-        result = 4 == expiry.length && (mm = parseInt(expiry.substr(0, 2))) < 13 && mm > 0;
+        mm_len = 4 == expiry.length ? 2 : 4;
 
-        if (result && (yy = parseInt(expiry.substr(2))) >= (yyyy % 1000)) {
+        result = (mm = parseInt(expiry.substr(0, 2))) < 13 && mm > 0;
+
+        if (result && (yy = parseInt(expiry.substr(mm_len))) >= (yyyy % (2 == mm_len ? 1000 : 1))) {
             c_time = 3600 * 24 * (365 * (2000 + yy - 1970) + 30 * (mm + 1));
             return c_time * 1000 >= today;
         }
@@ -284,6 +453,11 @@ Mynix.CC_Validator = function() {
         return ccv.length === len && !ccv.match('/[\\D]/');
     };
 
+    var is_valid_postcode = function(postal_code, country) {
+        return postal_codes.hasOwnProperty(country) ? postal_code.length == postal_codes[country][1]
+                : postal_code.length >= MIN_POSTAL_CODE_LENGTH && postal_code.length <= MAX_POSTAL_CODE_LENGTH;
+    }
+
     /**
      * Returns the card issuer name if known, false otherwise
      * 
@@ -309,7 +483,19 @@ Mynix.CC_Validator = function() {
         return false;
     };
 
-    // return the public properties
+    /**
+     * Set a custom set of patterns to be used for testing card number
+     * 
+     * @param Object
+     *            pattern An Object where key is the card issuer and value is the correspondent pattern
+     */
+    var set_cards_pattern = function(pattern) {
+        if (pattern.length > 0) {
+            cards_pattern = pattern;
+        }
+    };
+
+    // our class public interface
     return {
         // public functions
         init : init,
@@ -318,6 +504,8 @@ Mynix.CC_Validator = function() {
         is_valid_expiry : is_valid_expiry,
         is_valid_issuer : is_valid_issuer,
         is_valid_number : is_valid_number,
+        is_valid_postcode : is_valid_postcode,
+        set_cards_pattern : set_cards_pattern,
         // public constant
         AMEX : AMEX,
         VISA : VISA,
@@ -327,4 +515,4 @@ Mynix.CC_Validator = function() {
         JCB : JCB,
         MAESTRO : MAESTRO
     };
-};
+})();
