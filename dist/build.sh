@@ -8,7 +8,7 @@ echo "Creating an single monolitic bundle .js file: $OUTPUT"
 echo "" > $OUTPUT;
 
 for f in "utils" "asia" "europe" "pacific" "world" "constants" "postal-codes-lengths" "braintree";do
-	cat "${DIR}/../src/libs/js/${f}.js" >> $OUTPUT
+	cat "${DIR}/../src/deps/${f}.js" >> $OUTPUT
 	echo -e "\n" >> $OUTPUT;
 done
 
