@@ -1,0 +1,108 @@
+@CHARSET "UTF-8";
+
+div.message, div.nag, table {
+	display: inline-block;
+	line-height: 19px;
+	padding: 11px 15px;
+	font-size: 14px;
+	text-align: left;
+	margin: 25px;
+	background-color: #FFF;
+	border-left: 4px solid #ff6b6b;
+	box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1);
+	color: #444;
+	font-family: "Open Sans", sans-serif;
+	outline: 0px none;
+}
+
+table, .nag {
+	display: table;
+	border-color: #FFBA00;
+}
+
+table td:first-child {
+	font-weight: bold;
+}
+
+table tr:last-child td {
+	font-weight: normal;
+}
+
+table td:first-child:HOVER {
+	color: #236391;
+}
+
+table tr:nth-child(5) td {
+	text-align: center;
+}
+
+input[type="button"] {
+	background-color: #FFBA00;
+	color: #000;
+	cursor: pointer;
+}
+
+.badge-wrapper {
+	display: inline;
+}
+
+#card-badge {
+	position: absolute;
+	margin-top: 5px;
+	margin-left: 10px;
+}
+
+.unknown-badge, .visa-badge, .mastercard-badge, .amex-badge, .discover-badge, .jcb-badge, .dinersclub-badge, .maestro-badge,
+	.paypal-badge {
+	width: 30px;
+	height: 22px;
+	display: inline-block;
+	background-repeat: no-repeat !important;
+	background-position: right 0px;
+	background-image: url('cc-badge.png');
+}
+
+.unknown-badge {
+	background-position: right 0px;
+}
+
+.visa-badge {
+	background-position: right -22px;
+}
+
+.mastercard-badge {
+	background-position: right -44px;
+}
+
+.amex-badge {
+	background-position: right -66px;
+}
+
+.discover-badge {
+	background-position: right -88px;
+}
+
+.jcb-badge {
+	background-position: right -110px;
+}
+
+.dinersclub-badge {
+	background-position: right -132px;
+}
+
+.maestro-badge {
+	background-position: right -154px;
+}
+
+.paypal-badge {
+	background-position: right -176px;
+}
+
+.visa-badge:HOVER, .mastercard-badge:HOVER, .amex-badge:HOVER, .discover-badge:HOVER, .jcb-badge:HOVER, .dinersclub-badge:HOVER,
+	.maestro-badge:HOVER, .paypal-badge:HOVER {
+	border: 1px solid transparent;
+	cursor: help;
+	-moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+}

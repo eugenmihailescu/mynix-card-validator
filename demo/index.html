@@ -1,158 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style type="text/css">
-div.message, div.nag, table {
-	display: inline-block;
-	line-height: 19px;
-	padding: 11px 15px;
-	font-size: 14px;
-	text-align: left;
-	margin: 25px;
-	background-color: #FFF;
-	border-left: 4px solid #ff6b6b;
-	box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1);
-	color: #444;
-	font-family: "Open Sans", sans-serif;
-	outline: 0px none;
-}
-
-table, .nag {
-	display: table;
-	border-color: #FFBA00;
-}
-
-table td:first-child {
-	font-weight: bold;
-}
-
-table tr:last-child td {
-	font-weight: normal;
-}
-
-table td:first-child:HOVER {
-	color: #236391;
-}
-
-table tr:nth-child(5) td {
-	text-align: center;
-}
-
-input[type="button"] {
-	background-color: #FFBA00;
-	color: #000;
-	cursor: pointer;
-}
-
-.badge-wrapper {
-	display: inline;
-}
-
-#card-badge {
-	position: absolute;
-	margin-top: 5px;
-	margin-left: 10px;
-}
-
-.unknown-badge, .visa-badge, .mastercard-badge, .amex-badge, .discover-badge, .jcb-badge, .dinersclub-badge, .maestro-badge,
-	.paypal-badge {
-	width: 30px;
-	height: 22px;
-	display: inline-block;
-	background-repeat: no-repeat !important;
-	background-position: right 0px;
-	background-image: url('cc-badge.png');
-}
-
-.unknown-badge {
-	background-position: right 0px;
-}
-
-.visa-badge {
-	background-position: right -22px;
-}
-
-.mastercard-badge {
-	background-position: right -44px;
-}
-
-.amex-badge {
-	background-position: right -66px;
-}
-
-.discover-badge {
-	background-position: right -88px;
-}
-
-.jcb-badge {
-	background-position: right -110px;
-}
-
-.dinersclub-badge {
-	background-position: right -132px;
-}
-
-.maestro-badge {
-	background-position: right -154px;
-}
-
-.paypal-badge {
-	background-position: right -176px;
-}
-
-.visa-badge:HOVER, .mastercard-badge:HOVER, .amex-badge:HOVER, .discover-badge:HOVER, .jcb-badge:HOVER, .dinersclub-badge:HOVER,
-	.maestro-badge:HOVER, .paypal-badge:HOVER {
-	border: 1px solid transparent;
-	cursor: help;
-	-moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
-	-webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
-	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
-}
-</style>
-<script type="text/javascript" src="mynix-card-validator.js"></script>
-<script type="text/javascript">
-    function print_result(what, valid) {
-        var color = valid ? 'green' : 'red';
-        return '<li><span style="color:'+color+'">' + what + ' has ' + (valid ? '' : 'NOT') + ' a valid pattern</span></li>';
-    }
-
-    function validate() {
-        var el = document.getElementById('cc_result'), cc_number = document.getElementById('cc_number').value, cc_expiry = document
-                .getElementById('cc_expiry').value.replace(/[^\d]/g, ''), ccv_number = document.getElementById('ccv_number').value, postal_code = document
-                .getElementById('postal_code').value, postal_code_is_valid, country_code = document
-                .getElementById('country_code').value, is_valid, issuer, s = '';
-
-        Mynix.CC_Validator.init(cc_number, cc_expiry, ccv_number);
-
-        is_valid = Mynix.CC_Validator.is_valid_number();
-
-        postal_code_is_valid = Mynix.CC_Validator.is_valid_postalcode(postal_code, country_code);
-        issuer = is_valid ? Mynix.CC_Validator.get_card_issuer(Mynix.CC_Validator.is_valid_issuer()) : '';
-
-        el.innerHTML = '';
-        if (false !== is_valid) {
-            el.innerHTML = '<p>The card number matches the <strong>' + issuer + '</strong> pattern</p>';
-        }
-
-        s = print_result('card number', is_valid);
-        s += print_result('expiry date', Mynix.CC_Validator.is_valid_expiry());
-        s += print_result('CCV', Mynix.CC_Validator.is_valid_ccv());
-        s += print_result("Postal code length", postal_code_is_valid);
-        el.innerHTML += '<ul>' + s + '</ul>';
-    }
-
-    function viewSource(evt) {
-        evt.preventDefault();
-
-        var content = unescape(document.documentElement.innerHTML);
-        content = content.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-
-        var source = window.open("");
-        source.document.write('<!doctype html><html><head><title>' + window.location.href + '<\/title><\/head><body><pre>'
-                + content + '<\/pre><\/body><\/html>');
-    }
-</script>
+<!-- we are going to use a monolithic bundle minified JS script 
+<script src="../src/libs/js/utils.js"></script>
+<script src="../src/libs/js/asia.js"></script>
+<script src="../src/libs/js/europe.js"></script>
+<script src="../src/libs/js/pacific.js"></script>
+<script src="../src/libs/js/world.js"></script>
+<script src="../src/libs/js/constants.js"></script>
+<script src="../src/libs/js/postal-codes-lengths.js"></script>
+<script src="../src/libs/js/braintree.js"></script>
+<script src="../src/mynix-card-validator.js"></script>-->
+<link rel="stylesheet" href="app.css" />
 <meta charset="UTF-8">
 <title>Credit card validator</title>
 </head>
@@ -187,7 +46,7 @@ input[type="button"] {
 			</select> <input id="postal_code" type="text" value="123" maxlength="10" size="10" placeholder="Postal code"></td>
 		</tr>
 		<tr>
-			<td colspan="2"><input type="button" value="Validate" onclick="validate();"></td>
+			<td colspan="2"><input id="btn-validate" type="button" value="Validate"></td>
 		</tr>
 		<tr>
 			<td colspan="2" id="cc_result"></td>
@@ -197,55 +56,10 @@ input[type="button"] {
 		Do you want the JavaScript class source code?<br> <a href="https://github.com/eugenmihailescu/mynix-card-validator"
 			target="_blank">https://github.com/eugenmihailescu/mynix-card-validator</a>
 	</div>
-	<script>
-        (function() {
-            function fireEvent(target, name) {
-                if (target["fireEvent"]) {
-                    target["fireEvent"].call(target, "on" + name);
-                } else {
-                    target.dispatchEvent.call(target, new Event(name));
-                }
-            }
-
-            function onCardNumberChange(event) {
-                Mynix.CC_Validator.init(event.target.value);
-                var code = Mynix.CC_Validator.get_card_issuer_code();
-                cc_badge.setAttribute("class", code + "-badge");
-            }
-
-            var ctry_list = Mynix.CC_Validator.get_country_postal_code_lengths();
-            var country_code = document.getElementById("country_code");
-            var postal_code = document.getElementById("postal_code");
-            var cc_number = document.getElementById("cc_number");
-            var cc_badge = document.getElementById("card-badge");
-            var mask = "_";
-
-            var options = "";
-            for (ctry_code in ctry_list) {
-                if (ctry_list.hasOwnProperty(ctry_code)) {
-                    options += "<option value=\""+ctry_code+"\">" + ctry_list[ctry_code][0] + " [" + ctry_list[ctry_code][1]
-                            + "]</option>";
-                }
-            }
-            if (country_code) {
-                country_code.innerHTML = options;
-            }
-
-            country_code.addEventListener("change", function(event) {
-                var len = ctry_list[event.target.value][1];
-                postal_code.setAttribute("maxlength", len);
-                postal_code.setAttribute("placeholder", mask.repeat(len));
-                postal_code.setAttribute("size", len);
-            });
-
-            cc_number.addEventListener("keyup", onCardNumberChange);
-            cc_number.addEventListener("keydown", onCardNumberChange);
-
-            document.getElementById('view-source').addEventListener('click', viewSource, false);
-
-            fireEvent(country_code, "change");
-            fireEvent(cc_number, "keyup");
-        })();
-    </script>
+	<!-- we could bundle the app+library in a monolithic bundle so there is a single .js file at all
+	<script src="../dist/bundle.min.js"></script> 
+	<script src="app.js"></script> 
+	-->
+	<script src="bundle.min.js"></script>
 </body>
 </html>
