@@ -157,8 +157,10 @@ var CC_Validator = (function(modules, undefined) {
             result = (mm = parseInt(expiry.substr(0, 2))) < 13 && mm > 0;
 
             if (result && (yy = parseInt(expiry.substr(mm_len))) >= (yyyy % (2 == mm_len ? 1000 : 1))) {
-                c_time = 3600 * 24 * (365 * (2000 + yy - 1970) + 30 * (mm + 1));
-                return c_time * 1000 >= today;
+                if (yy > (yyyy % (2 == mm_len ? 1000 : 1)) || mm >= today.getMonth()) {
+                    c_time = 3600 * 24 * (365 * (2000 + yy - 1970) + 30 * (mm + 1));
+                    return c_time * 1000 >= today;
+                }
             }
             return false;
         },

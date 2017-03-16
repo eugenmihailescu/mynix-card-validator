@@ -7,7 +7,7 @@ The JavaScript implementation is splitted in few tiny modules (which can be bund
 - gives the credit card issuer name (American Express, Visa, MasterCard, Discover, DinersClub, JCB and Maestro only)
 
 Furthermore the library contains some extended functionalities that aids in:
-- check the validity of a postal code length given the country code
+- check the validity of a postal code length given the country code (handy if your checkout card form includes a Postal Code field)
 - check if a given country has Braintree Payment Gateway support (given the [Braintree](https://www.braintreepayments.com/) module one could easily create similar modules for [Stripe](https://stripe.com/se), [PayPal](https://www.paypal.com/), etc)
 
 # What this repo includes
